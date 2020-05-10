@@ -1,32 +1,26 @@
-const express = require("expresss");
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const express = require("express");
 let bodyParser = require('body-parser');
-const mongoose = require("mongoose");
-const bcrypt = require('bcrypt');
-const apiRoutes = require("./api-routes");
+const users = require("./routes/users");
+const auth = require("./routes/auth");
 
 const app = express();
+app.use(express.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-app.use(express.json());
+app.use(helmet());
+if (app.get('env') == 'development') {
+    app.use(morgan('tiny'));
+}
+mongoose.connect('mongodb://localhost/MedCareDB', { useNewUrlParser: true })
+    .then(() => console.log("Database connected"))
+    .catch(() => console.error("Error connecting to Database"))
 
-mongoose.connect('mongodb://localhost:27017', { useNewUrlParser: true });
-var db = mongoose.connection;
+app.use('/api/users', users);
+app.use('/api/auth', auth);
 
-if (!db)
-    console.log("Error connecting db")
-else
-    console.log("Db connected successfully")
-
-
-app.post('/register', async (req, res) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = { email: req.email, firstName: req.fisrtName, lastName: req.lastName, password: hashedPassword }
-    }
-    catch{
-
-    }
-})
-app.use('/api', apiRoutes);
-app.listen(3000);
+const port = process.env.PORT || 3000;
+app.listen(port); 
