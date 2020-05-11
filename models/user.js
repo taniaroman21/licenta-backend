@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require('@hapi/joi');
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
-
 
 const userSchema = new mongoose.Schema({
     email: String,

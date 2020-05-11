@@ -1,5 +1,5 @@
 var _ = require('lodash');
-const { User, validate } = require('../models/user');
+const { Clinic, validate } = require('../models/clinic');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
@@ -10,15 +10,15 @@ router.use(express.json());
 router.post('/register', async (req, res) => {
     const { error } = validate(req.body);
     if (error) {
-        res.sendStatus(400).send(error.details[0].message + "The object you are sendinggbhsabhb");
+        res.sendStatus(400).send(error.details[0].message);
         return;
     }
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        let user = new User({ email: req.body.email, firstName: req.body.firstName, lastName: req.body.lastName, password: hashedPassword });
-        await user.save();
+        let clinic = new Clinic({ isClinic: req.body.isClinic, email: req.body.email, name: req.body.name, county: req.body.county, city: req.body.city, password: hashedPassword });
+        await clinic.save();
 
-        res.send(_.pick(user, ["email", "firstName", "lastName"]));
+        res.send(_.pick(clinic, ["email", "name", "county", "city"]));
     }
     catch (err) {
         console.log(err);
@@ -26,8 +26,8 @@ router.post('/register', async (req, res) => {
 });
 
 router.get('/me', auth, async (req, res) => {
-    const user = await User.findById(req.user._id).select("-password");
-    res.send(user);
+    const clinic = await Clinic.findById(req.clinic._id).select("-password");
+    res.send(clinic);
 })
 
 module.exports = router;
