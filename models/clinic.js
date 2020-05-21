@@ -8,7 +8,10 @@ const clinicSchema = new mongoose.Schema({
     county: { type: { id: Number, name: String, state_code: String }, required: true },
     city: { type: { id: Number, name: String }, required: true },
     dateCreated: { type: Date, default: Date.now },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    fields: { type: Array({ id: String }), default: [] },
+    reviews: { type: { stars: Number, totalReviews: Number }, default: { stars: 0, totalReviews: 0 } },
+    profileImage: {type: String, default: null}
 
 });
 clinicSchema.methods.generateToken = function () {

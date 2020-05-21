@@ -29,5 +29,10 @@ router.get('/me', auth, async (req, res) => {
     const clinic = await Clinic.findById(req.clinic._id).select("-password");
     res.send(clinic);
 })
+router.get('/', async (req, res) => {
+    const clinics = await Clinic.find().select('-password');
+    res.send( clinics);
+
+ })
 
 module.exports = router;
