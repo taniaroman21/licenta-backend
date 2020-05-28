@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Joi = require('@hapi/joi');
-const jwt = require('jsonwebtoken');
 
 const clinicSchema = new mongoose.Schema({
     email: { type: String, required: true },
@@ -11,12 +10,12 @@ const clinicSchema = new mongoose.Schema({
     password: { type: String, required: true },
     fields: { type: Array({ id: String }), default: [] },
     reviews: { type: { stars: Number, totalReviews: Number }, default: { stars: 0, totalReviews: 0 } },
-    profileImage: {type: String, default: null}
+    profileImage: { type: String, default: null },
+    description: { type: String, default: '' }
 
 });
-clinicSchema.methods.generateToken = function () {
-    const token = jwt.sign({ _id: this._id, isClinic: true }, 'blabla');
-    return token;
+clinicSchema.methods.getType = () => {
+    return 'clinic';
 }
 const Clinic = mongoose.model('Clinics', clinicSchema);
 

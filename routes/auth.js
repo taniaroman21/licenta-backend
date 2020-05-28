@@ -2,32 +2,48 @@ const jwt = require('jsonwebtoken');
 var _ = require('lodash');
 const { User } = require('../models/user');
 const { Clinic } = require('../models/clinic');
+const { Doctor } = require('../models/doctor');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const Joi = require('@hapi/joi');
+const { generateJwt } = require('../utils/jwt');
 
 const router = express.Router();
 router.use(express.json());
 
 router.post('/', async (req, res) => {
-    let isClinic = false;
-    let clinic;
+    let currentUser;
+    const email = req.body.email;
     const { error } = validate(req.body);
+
     if (error) {
         res.sendStatus(400).send(result.error.details[0].message);
         return;
     }
-    let user = await User.findOne({ email: req.body.email });
+
+    const user = await User.findOne({ email: email });
+    currentUser = user;
+
     if (!user) {
-        clinic = await Clinic.findOne({ email: req.body.email });
-        if (!clinic) return res.status(400).send("Invalid email or password");
-        else isClinic = true;
+        const clinic = await Clinic.findOne({ email: email });
+        currentUser = clinic;
+        if (!clinic) {
+            const doctor = await Doctor.findOne({ email: email });
+            currentUser = doctor;
+
+            if (!doctor) return res.status(400).send("Invalid email or password");
+        }
+        
     }
-    const validPassword = isClinic ? await bcrypt.compare(req.body.password, clinic.password) : await bcrypt.compare(req.body.password, user.password);
+
+    const validPassword = validatePassword(req.body.password, currentUser);
+    
     if (!validPassword) return res.status(400).send("invalid username or password");
-    const token = isClinic ? clinic.generateToken() : user.generateToken();
-    res.send({ token: token, isClinic: isClinic });
-})
+    const token = generateJwt(currentUser.id, currentUser.getType());
+    const { password, ...response } = currentUser._doc;
+    res.send({ token: token, userType: currentUser.getType(), user: response });
+});
+
 function validate(req) {
     const schema = Joi.object({
         email: Joi.string().email().required(),
@@ -35,6 +51,11 @@ function validate(req) {
     });
 
     return schema.validate(req);
+}
+
+async function validatePassword(password, object) {
+    const validPassword = await bcrypt.compare(password, object.password);
+    return validPassword;
 }
 
 module.exports = router;
