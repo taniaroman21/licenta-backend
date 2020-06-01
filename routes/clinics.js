@@ -16,9 +16,9 @@ router.post('/register', async (req, res) => {
         return;
     }
 
-    const exstingUser = Clinic.findOne({ email: req.body.email }) ||
-        User.findOne({ email: req.body.email }) ||
-        Doctor.findOne({email: req.body.email}) ;
+    const exstingUser = await Clinic.findOne({ email: req.body.email }) ||
+        await User.findOne({ email: req.body.email }) ||
+        await Doctor.findOne({ email: req.body.email });
     if (exstingUser) return res.status(400).send("A user with this email address already exists");
 
     try {
@@ -33,8 +33,8 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.get('/me', auth, async (req, res) => {
-    const clinic = await Clinic.findById(req.clinic._id).select("-password");
+router.get('/:id', async (req, res) => {
+    const clinic = await Clinic.findById(req.params.id).select("-password");
     res.send(clinic);
 });
 
@@ -51,7 +51,7 @@ router.put('/update', auth, async (req, res) => {
         try {
             clinic.set({
                 description: req.body.description,
-                name: req.body.name,
+                workingHours: req.body.workingHours,
             })
             const result = await clinic.save();
             const { password, ...updatedClient } = result._doc;

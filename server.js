@@ -5,6 +5,8 @@ const express = require("express");
 let bodyParser = require('body-parser');
 const users = require("./routes/users");
 const clinics = require("./routes/clinics");
+const doctors = require("./routes/doctors");
+const appointments = require("./routes/appointments");
 const auth = require("./routes/auth");
 
 const app = express();
@@ -14,7 +16,7 @@ app.use(function (req, res, next) {
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-auth-token');
 
     res.setHeader('Access-Control-Allow-Credentials', true);
 
@@ -34,6 +36,8 @@ mongoose.connect('mongodb://localhost/MedCareDB', { useNewUrlParser: true })
 
 app.use('/api/users', users);
 app.use('/api/clinics', clinics);
+app.use('/api/doctors', doctors);
+app.use('/api/appointments', appointments);
 app.use('/api/auth', auth);
 
 const port = process.env.PORT || 5000;

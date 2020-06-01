@@ -8,8 +8,9 @@ const doctorSchema = new mongoose.Schema({
   lastName: String,
   dateCreated: { type: Date, default: Date.now },
   password: String,
-  fileds: [String],
-  clinicIds: [String]
+  fields: [String],
+  clinicIds: [String],
+  profileImage: { type: String, default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" }
 });
 doctorSchema.methods.getType = () => {
   return "doctor";
@@ -23,11 +24,11 @@ function validateDoctor(doctor) {
     lastName: Joi.string().required(),
     password: Joi.string().required(),
     repeatPassword: Joi.ref('password'),
-    fileds: Joi.array().items(Joi.string()),
-    clinicIds: Joi.string()
+    fields: Joi.array().items(Joi.string()),
+    clinicId: Joi.string()
   });
 
-  return schema.validate(user);
+  return schema.validate(doctor);
 }
 
 exports.Doctor = Doctor;

@@ -10,8 +10,9 @@ const clinicSchema = new mongoose.Schema({
     password: { type: String, required: true },
     fields: { type: Array({ id: String }), default: [] },
     reviews: { type: { stars: Number, totalReviews: Number }, default: { stars: 0, totalReviews: 0 } },
-    profileImage: { type: String, default: null },
-    description: { type: String, default: '' }
+    profileImage: { type: String, default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"},
+    description: { type: String, default: '' },
+    workingHours: { type: Array(String), default: ["08:00","19:00"] }
 
 });
 clinicSchema.methods.getType = () => {

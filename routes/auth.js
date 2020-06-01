@@ -6,7 +6,7 @@ const { Doctor } = require('../models/doctor');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const Joi = require('@hapi/joi');
-const { generateJwt } = require('../utils/jwt');
+const { generateToken } = require('../utils/jwt');
 
 const router = express.Router();
 router.use(express.json());
@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
     const validPassword = validatePassword(req.body.password, currentUser);
     
     if (!validPassword) return res.status(400).send("invalid username or password");
-    const token = generateJwt(currentUser.id, currentUser.getType());
+    const token = generateToken(currentUser.id, currentUser.getType());
     const { password, ...response } = currentUser._doc;
     res.send({ token: token, userType: currentUser.getType(), user: response });
 });

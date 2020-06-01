@@ -15,9 +15,9 @@ router.post('/register', async (req, res) => {
         res.sendStatus(400).send(error.details[0].message + "The object you are is not valid");
         return;
     }
-    const exstingUser = Clinic.findOne({ email: req.body.email }) ||
-        User.findOne({ email: req.body.email }) ||
-        Doctor.findOne({ email: req.body.email });
+    const exstingUser = await Clinic.findOne({ email: req.body.email }) ||
+        await User.findOne({ email: req.body.email }) ||
+        await Doctor.findOne({ email: req.body.email });
     if (exstingUser) return res.status(400).send("A user with this email address already exists");
 
     try {
