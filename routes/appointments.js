@@ -26,7 +26,7 @@ router.post('/', auth, async (req, res) => {
   
   if (req.user._id !== req.body.userId) return res.status(401);
   const clinic = await Clinic.findById(req.body.clinicId);
-  // const doctor = await Doctor.findById(req.body.doctorId);
+  const doctor = await Doctor.findById(req.body.doctorId);
   const patient = await User.findById(req.body.userId);
   if (!clinic) return res.status(400);
 
@@ -34,7 +34,7 @@ router.post('/', auth, async (req, res) => {
     const appointment = new Appointment({
       user: { name: patient.firstName + ' '+ patient.lastName, id: req.body.userId },
       clinic: {name: clinic.name, id: req.body.clinicId},
-      doctor: {name:  "Nume Doctor", id: req.body.doctorId},
+      doctor: {name:  doctor.firstName+ ' ' + doctor.lastName, id: req.body.doctorId},
       date: req.body.date,
       type: req.body.type,
       hour: req.body.hour,
@@ -51,13 +51,17 @@ router.post('/', auth, async (req, res) => {
 router.get('/patient/:id', auth, async(req, res) => {
   if (req.user._id !== req.params.id) return res.status(401);
 
-  const appointments = await Appointment.find({ 'user.id': req.params.id });
-  res.send(appointments);
+  try {
+    const appointments = req.query.date ? await Appointment.find({ 'user.id': req.params.id, date: req.query.date }) : await Appointment.find({ 'user.id': req.params.id });
+    res.send(appointments);
+  } catch (error) {
+    res.send(error);
+  }
 
 });
 
-router.get('/clinic/:id', auth, async (req, res) => {
-  if (req.user._id !== req.params.id) return res.status(401);
+router.get('/clinic/:id', async (req, res) => {
+  // if (req.user._id !== req.params.id) return res.status(401);
   try {
     const appointments = req.query.date ? await Appointment.find({ 'clinic.id': req.params.id, date: req.query.date }) : await Appointment.find({ 'clinic.id': req.params.id});
     res.send(appointments);
@@ -67,10 +71,13 @@ router.get('/clinic/:id', auth, async (req, res) => {
 });
 
 router.get('/doctor/:id', auth, async (req, res) => {
-  if (req.user._id !== req.params.id) return res.status(401);
-
-  const appointments = await Appointment.find({ doctorId: req.params.id });
-  res.send(appointments);
+  // if (req.user._id !== req.params.id) return res.status(401);
+  try {
+    const appointments = req.query.date ? await Appointment.find({ 'doctor.id': req.params.id, date: req.query.date }) : await Appointment.find({ 'doctor.id': req.params.id });
+    res.send(appointments);
+  } catch (error) {
+    res.send(error);
+  }
 });
 
 module.exports = router;

@@ -8,7 +8,7 @@ const clinicSchema = new mongoose.Schema({
     city: { type: { id: Number, name: String }, required: true },
     dateCreated: { type: Date, default: Date.now },
     password: { type: String, required: true },
-    fields: { type: Array({ id: String }), default: [] },
+    fields: { type: Array(), default: [] },
     reviews: { type: { stars: Number, totalReviews: Number }, default: { stars: 0, totalReviews: 0 } },
     profileImage: { type: String, default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"},
     description: { type: String, default: '' },
