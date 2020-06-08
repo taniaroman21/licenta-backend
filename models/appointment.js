@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const Joi = require('@hapi/joi');
 const { types } = require('../utils/appointment');
+const Schema = mongoose.Schema;
 
 const appointmentSchema = new mongoose.Schema({
   user: {
-    type: { name: String, id: String }
+    type: { name: { type: Schema.Types.ObjectId, ref: 'User' }, id: String }
   },
   clinic: {
     type: { name: String, id: String }
@@ -34,7 +35,8 @@ const appointmentSchema = new mongoose.Schema({
     }
   },
   hour: String,
-  field: String
+  field: String,
+  result: {type:{diagnosis: String, prescription: String}}
 });
 
 const Appointment = mongoose.model('Appointments', appointmentSchema);

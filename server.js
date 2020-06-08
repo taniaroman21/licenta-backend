@@ -7,6 +7,7 @@ const users = require("./routes/users");
 const clinics = require("./routes/clinics");
 const doctors = require("./routes/doctors");
 const appointments = require("./routes/appointments");
+const reviews = require("./routes/reviews");
 const auth = require("./routes/auth");
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api/users', users);
 app.use('/api/clinics', clinics);
 app.use('/api/doctors', doctors);
 app.use('/api/appointments', appointments);
+app.use('/api/reviews', reviews);
 app.use('/api/auth', auth);
 
 const port = process.env.PORT || 5000;

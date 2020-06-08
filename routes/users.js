@@ -35,6 +35,21 @@ router.post('/register', async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
     const user = await User.findById(req.params.id).select("-password");
     res.send(user);
-})
+});
+
+router.put('/:id', auth, async (req, res) => {
+    if (req.user._id != req.params.id) return res.status(401).send("Unauthorized");
+    try {
+        const user = await User.findById(req.params.id);
+        user.set('phone', req.body.phone);
+        const response = await user.save();
+        res.send(response);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+    
+
+});
+
 
 module.exports = router;

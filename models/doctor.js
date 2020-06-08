@@ -23,7 +23,7 @@ function validateDoctor(doctor) {
     email: Joi.string().email().required(),
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
-    password: Joi.string().required(),
+    password: Joi.string(),
     field: Joi.string(),
     clinicId: Joi.string()
   });

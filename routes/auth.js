@@ -36,9 +36,9 @@ router.post('/', async (req, res) => {
         
     }
 
-    const validPassword = validatePassword(req.body.password, currentUser);
+    const validPassword = await validatePassword(req.body.password, currentUser);
     
-    if (!validPassword) return res.status(400).send("invalid username or password");
+    if (!validPassword) return res.status(400).send("invalid email or password");
     const token = generateToken(currentUser.id, currentUser.getType());
     const { password, ...response } = currentUser._doc;
     res.send({ token: token, userType: currentUser.getType(), user: response });

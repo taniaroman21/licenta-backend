@@ -5,6 +5,8 @@ const { Doctor } = require('../models/doctor');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
+const multer = require('multer');
+const upload = multer({ dest: __dirname + '/uploads/images' });
 
 const router = express.Router();
 router.use(express.json());
@@ -39,19 +41,24 @@ router.get('/:id', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-    const clinics = await Clinic.find().select('-password');
-    res.send(clinics);
+    const regex = new RegExp(`.*${req.query.filter}.*`, 'i');
+    const counter = await Clinic.find().or([{ name: regex }, { email: regex }]).count();
+    const clinics = await Clinic.find().or([{ name: regex }, { email: regex }]).skip(req.query.pageSize * req.query.page).limit(parseInt(req.query.pageSize));
+    res.send({ clinics: clinics, count: counter });
 
 });
 
 router.put('/update', auth, async (req, res) => {
-    if (req.user._id == req.body._id) {
-        let clinic = await Clinic.findById(req.body._id);
+    console.log(req.user._id, req.body.id)
+    if (req.user._id == req.body.id) {
+        let clinic = await Clinic.findById(req.body.id);
         if (!clinic) res.status(404).send("Clinic with this id does not exist");
         try {
             clinic.set({
                 description: req.body.description,
+                number: req.body.number,
                 workingHours: req.body.workingHours,
+                workingDays: req.body.workingDays
             })
             const result = await clinic.save();
             const { password, ...updatedClient } = result._doc;
@@ -64,6 +71,17 @@ router.put('/update', auth, async (req, res) => {
     }
     else res.status(401).send("Unauthorized");
 });
+
+router.put('/upload/:id', auth, upload.single('image'), async (req, res) => {
+    if (req.user._id !== req.params.id) return res.status(401).send("Not allowed");
+    try {
+        const clinic = await Clinic.findById(req.params.id);
+        clinic.set('profileImage', req.body);
+        await clinic.save();
+    } catch (error) {
+        res.status(500).send(error);
+    }
+})
 
 
 

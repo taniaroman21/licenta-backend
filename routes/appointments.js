@@ -13,7 +13,7 @@ router.use(express.json());
 router.post('/', auth, async (req, res) => {
   const { error } = validate(req.body);
   if (error) {
-    res.sendStatus(400).send(error.details[0].message);
+    res.status(400).send(error.details[0].message);
     return;
   }
 
@@ -24,7 +24,7 @@ router.post('/', auth, async (req, res) => {
     return;
   }
   
-  if (req.user._id !== req.body.userId) return res.status(401);
+  if (req.user._id !== req.body.userId) return res.status(401).send("Unauthorized");
   const clinic = await Clinic.findById(req.body.clinicId);
   const doctor = await Doctor.findById(req.body.doctorId);
   const patient = await User.findById(req.body.userId);
@@ -49,13 +49,24 @@ router.post('/', auth, async (req, res) => {
 });
 
 router.get('/patient/:id', auth, async(req, res) => {
-  if (req.user._id !== req.params.id) return res.status(401);
-
+  if (req.user._id !== req.params.id && req.user._id !== req.query.doctorId) return res.status(401).send("Unauthorized");
+  let query = {
+    'user.id': req.params.id,
+    'clinic.id': req.query.clinicId,
+    'doctor.id':req.query.doctorId,
+    'date': req.query.date
+  };
+  Object.keys(query).forEach(key => {
+    console.log(key);
+    if (!query[key]) {
+      delete query[key];
+    }
+  });
   try {
-    const appointments = req.query.date ? await Appointment.find({ 'user.id': req.params.id, date: req.query.date }) : await Appointment.find({ 'user.id': req.params.id });
+    const appointments = await Appointment.find(query);
     res.send(appointments);
   } catch (error) {
-    res.send(error);
+    res.status(500);
   }
 
 });
@@ -71,13 +82,44 @@ router.get('/clinic/:id', async (req, res) => {
 });
 
 router.get('/doctor/:id', auth, async (req, res) => {
-  // if (req.user._id !== req.params.id) return res.status(401);
+  
+  let query = {
+    'doctor.id': req.params.id,
+    'patient.id': req.query.patientId,
+    'clinic.id': req.query.clinicId,
+    'date': req.query.date
+  };
+  Object.keys(query).forEach(key => {
+    console.log(key);
+    if (!query[key]) {
+      delete query[key];     
+    }
+  });
+  
+
   try {
-    const appointments = req.query.date ? await Appointment.find({ 'doctor.id': req.params.id, date: req.query.date }) : await Appointment.find({ 'doctor.id': req.params.id });
+    const appointments = await Appointment.find(query);
     res.send(appointments);
   } catch (error) {
     res.send(error);
   }
 });
 
+router.put('/:id', auth, async (req, res) => {
+  let appointment = await Appointment.findById(req.params.id);
+  if (!appointment) return res.status(404).send("Appointment doesn't exist");
+  if (appointment.doctor.id != req.user._id) return res.status(401).send("You're not allowed to leave a result  on this appointment");
+  let now = new Date();
+  // if (appointment.date.getTime() > now.getTime()) return res.status(401).send("You can't set the results before the appointment");
+  try {
+    appointment.set({
+      'result.diagnosis' : req.body.diagnosis,
+      'result.prescription':req.body.prescription
+    });
+    const result = await appointment.save();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+})
 module.exports = router;
