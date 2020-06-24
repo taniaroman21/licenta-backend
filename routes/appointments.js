@@ -6,6 +6,9 @@ const { Appointment, validate } = require('../models/appointment');
 const express = require('express');
 const auth = require('../middleware/auth');
 const { validateId } = require('../utils/validations');
+const fs = require('fs');
+const ResourcesService = require('../services/resources.service');
+
 
 const router = express.Router();
 router.use(express.json());
@@ -43,7 +46,7 @@ router.post('/', auth, async (req, res) => {
     const result = await appointment.save();
     res.send(result);
   } catch (error) {
-     res.send(error.message);
+     res.status(400).send(error.message);
   }
 
 });
@@ -113,13 +116,23 @@ router.put('/:id', auth, async (req, res) => {
   // if (appointment.date.getTime() > now.getTime()) return res.status(401).send("You can't set the results before the appointment");
   try {
     appointment.set({
-      'result.diagnosis' : req.body.diagnosis,
-      'result.prescription':req.body.prescription
+      'result.diagnosis': req.body.diagnosis,
+      'result.prescription': req.body.prescription
     });
     const result = await appointment.save();
     res.send(result);
   } catch (error) {
     res.status(500).send(error);
   }
+});
+
+router.put('/upload/:id', auth, async (req, res) => {
+  // if (req.user._id !== req.params.id) res.status(401).send("Not allowed");
+  try {
+    await ResourcesService.uploadAppointmentDocs(req, res);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+
 })
 module.exports = router;

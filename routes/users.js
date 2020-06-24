@@ -5,6 +5,8 @@ const { Doctor } = require('../models/doctor');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
+const ResourcesService = require('../services/resources.service');
+const multer = require('multer');
 
 const router = express.Router();
 router.use(express.json());
@@ -50,6 +52,15 @@ router.put('/:id', auth, async (req, res) => {
     
 
 });
+router.put('/:id/upload', auth, async (req, res) => {
+    if (req.user._id !== req.params.id) res.status(401).send("Not allowed");
+    try {
+       await ResourcesService.uploadUserProfileImage(req, res);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+
+})
 
 
 module.exports = router;

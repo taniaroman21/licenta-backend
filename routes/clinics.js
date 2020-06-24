@@ -6,7 +6,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
 const multer = require('multer');
-const upload = multer({ dest: __dirname + '/uploads/images' });
+const ResourcesService = require('../services/resources.service');
 
 const router = express.Router();
 router.use(express.json());
@@ -25,7 +25,14 @@ router.post('/register', async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const clinic = new Clinic({ isClinic: req.body.isClinic, email: req.body.email, name: req.body.name, county: req.body.county, city: req.body.city, password: hashedPassword });
+        const clinic = new Clinic({
+            isClinic: req.body.isClinic,
+            email: req.body.email,
+            name: req.body.name,
+            county: req.body.county,
+            city: req.body.city,
+            password: hashedPassword
+        });
         await clinic.save();
 
         res.send(_.pick(clinic, ["email", "name", "county", "city"]));
@@ -72,12 +79,10 @@ router.put('/update', auth, async (req, res) => {
     else res.status(401).send("Unauthorized");
 });
 
-router.put('/upload/:id', auth, upload.single('image'), async (req, res) => {
-    if (req.user._id !== req.params.id) return res.status(401).send("Not allowed");
+router.put('/:id/upload', auth, async (req, res) => {
+    if (req.user._id !== req.params.id) res.status(401).send("Not allowed");
     try {
-        const clinic = await Clinic.findById(req.params.id);
-        clinic.set('profileImage', req.body);
-        await clinic.save();
+        await ResourcesService.uploadClinicProfileImage(req, res);
     } catch (error) {
         res.status(500).send(error);
     }

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const express = require("express");
-let bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 const users = require("./routes/users");
 const clinics = require("./routes/clinics");
 const doctors = require("./routes/doctors");
@@ -11,6 +11,8 @@ const reviews = require("./routes/reviews");
 const auth = require("./routes/auth");
 
 const app = express();
+app.use(bodyParser.json({ parameterLimit: 10000, limit: '50mb', extended: true }));
+app.use(bodyParser.urlencoded({ parameterLimit: 10000, limit: '50mb', extended: true }));
 app.use(function (req, res, next) {
 
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
@@ -23,10 +25,8 @@ app.use(function (req, res, next) {
 
     next();
 });
+
 app.use(express.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
 app.use(helmet());
 if (app.get('env') == 'development') {
     app.use(morgan('tiny'));

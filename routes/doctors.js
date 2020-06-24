@@ -7,6 +7,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
+const ResourcesService = require('../services/resources.service');
 
 const router = express.Router();
 router.use(express.json());
@@ -27,7 +28,7 @@ router.post('/register', auth,  async (req, res) => {
         return res.status(400).send("This clinic already has a doctor with this email address and this specialization");
       } else if (!clinic.fields.includes(req.body.field)) {
         clinic.fields.push(req.body.field);
-        if (ids.includes(req.body.clinicId)) {
+        if (!ids.includes(req.body.clinicId)) {
           doctor.clinics.push({ id: clinic._id, name: clinic.name });
         }
       }
@@ -44,7 +45,14 @@ router.post('/register', auth,  async (req, res) => {
   else {
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      let doctor = new Doctor({ email: req.body.email, firstName: req.body.firstName, lastName: req.body.lastName, password: hashedPassword, fields: [req.body.field], clinics: [{ id: clinic._id, name: clinic.name }] });
+      let doctor = new Doctor({
+        email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        password: hashedPassword,
+        fields: [req.body.field],
+        clinics: [{ id: clinic._id, name: clinic.name }]
+      });
       await doctor.save();
       doctor.fields.forEach(field => {
         if (!clinic.fields.includes(field)) {
@@ -121,5 +129,14 @@ router.put('/update', auth, async (req, res) => {
 
     }
 });
+router.put('/:id/upload', auth, async (req, res) => {
+  if (req.user._id !== req.params.id) res.status(401).send("Not allowed");
+  try {
+    await ResourcesService.uploadDoctorProfileImage(req, res);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+
+})
 
 module.exports = router;
