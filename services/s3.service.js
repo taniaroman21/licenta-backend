@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const env = require('dotenv').config();
 
 const s3 = new AWS.S3({
   maxAsyncS3: 20,
