@@ -115,28 +115,28 @@ const ResourceService = {
 
   },
   uploadAppointmentDocs: async (req, res) => {
-    const file = req.body.file;
+    const file = req.files[0];
     const appointmentId = req.params.id;
     try {
       const appointment = await Appointment.findById(appointmentId);
       if (!appointment) return res.status(404).send("Appointment doesn't exist");
 
-      const base64Data = new Buffer(file.replace(/^data:image\/\w+;base64,/, ""), 'base64');
-      const type = file.split(';')[0].split('/')[1];
-      const filename = `${req.body.name}.${req.body.extension}`
       const params = {
         Bucket: 'licenta-images',
-        Key: `appointments/${appointmentId}-${filename}`,
-        Body: base64Data,
-        ContentEncoding: 'base64',
-        ContentType: `image/${type}`
+        Key: `appointments/${appointmentId}-${file.originalname}`,
+        Body: file.buffer,   
       };
 
       s3.upload(params, async (error, data) => {
         if (error) res.status(500).send(error);
-        user.profileImage = data.Location;
-        const response = await user.save();
-        res.send(response);
+        let docs = appointment.resultDocs;
+        docs.push({ name:file.originalname,file:data.Location });
+        try {
+          const response = await appointment.update({'resultDocs': docs});
+          res.send(response);
+        } catch (error) {
+          res.status(500).send(error);
+        }
       });
 
     } catch (error) {

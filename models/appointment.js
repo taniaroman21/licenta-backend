@@ -15,7 +15,8 @@ const appointmentSchema = new mongoose.Schema({
   },
   dateCreated: { type: Date, default: Date.now },
   date: {
-    type: Date, validate: {
+    type: Date,
+    validate: {
       validator: (date) => {
         now = new Date();
         if (date.getTime() < now.getTime()) {
@@ -36,9 +37,18 @@ const appointmentSchema = new mongoose.Schema({
   },
   hour: String,
   field: String,
-  result: {type:{diagnosis: String, prescription: String}}
+  result: { type: { diagnosis: String, prescription: String } },
+  resultDocs: {
+    type: [{ name: String, file: String }]
+  }
 });
-
+appointmentSchema.path('date').validate((date) => {
+  now = new Date();
+  if (date.getTime() < now.getTime() && this._v == 0) {
+    throw new Error('Appointment date cannot be earlier than the current date')
+  }
+  return true;
+});
 const Appointment = mongoose.model('Appointments', appointmentSchema);
 
 function validateAppointment(appointment) {

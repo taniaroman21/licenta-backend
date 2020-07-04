@@ -8,6 +8,7 @@ const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 const ResourcesService = require('../services/resources.service');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 router.use(express.json());
@@ -60,6 +61,26 @@ router.post('/register', auth,  async (req, res) => {
         }
       });
       await clinic.save();
+       // let transport = nodemailer.createTransport({
+    //   service: "Gmail",
+    //   auth: {
+    //     user: "mockedemailfortesting@gmail.com",
+    //     pass: "fortesting"
+    //   }
+    // });
+    // const message = {
+    //   from: '', // Sender address
+    //   to: ${doctor.email},         
+    //   subject: 'Platform registration',
+    //   text: `Dear ${doctor.firstName}, You have been registered to the platform by ${clinic.name}. Your password is ${doctor.req.body.password}` 
+    // };
+    // transport.sendMail(message, function (err, info) {
+    //   if (err) {
+    //     console.log(err)
+    //   } else {
+    //     console.log(info);
+    //   }
+    // });
 
       res.send(_.pick(doctor, ["_id", "email", "firstName", "lastName", "fields", "clinicIds", "profileImage"]));
     }

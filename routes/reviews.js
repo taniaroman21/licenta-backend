@@ -69,9 +69,9 @@ router.post('/', auth, async (req, res) => {
     // });
     // const message = {
     //   from: '', // Sender address
-    //   to: 'to@email.com',         // List of recipients
-    //   subject: 'New Review', // Subject line
-    //   text: `Dear ${clinic.name}, You received a review of ${review.stars} stars` // Plain text body
+    //   to: 'to@email.com',         
+    //   subject: 'New Review',
+    //   text: `Dear ${clinic.name}, You received a review of ${review.stars} stars` 
     // };
     // transport.sendMail(message, function (err, info) {
     //   if (err) {

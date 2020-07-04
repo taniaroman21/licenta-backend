@@ -8,6 +8,8 @@ const auth = require('../middleware/auth');
 const { validateId } = require('../utils/validations');
 const fs = require('fs');
 const ResourcesService = require('../services/resources.service');
+var multer = require('multer');
+var upload = multer();
 
 
 const router = express.Router();
@@ -115,18 +117,17 @@ router.put('/:id', auth, async (req, res) => {
   let now = new Date();
   // if (appointment.date.getTime() > now.getTime()) return res.status(401).send("You can't set the results before the appointment");
   try {
-    appointment.set({
+   const result = await appointment.update({
       'result.diagnosis': req.body.diagnosis,
       'result.prescription': req.body.prescription
     });
-    const result = await appointment.save();
     res.send(result);
   } catch (error) {
     res.status(500).send(error);
   }
 });
 
-router.put('/upload/:id', auth, async (req, res) => {
+router.put('/upload/:id', auth, upload.any(), async (req, res) => {
   // if (req.user._id !== req.params.id) res.status(401).send("Not allowed");
   try {
     await ResourcesService.uploadAppointmentDocs(req, res);
